@@ -1,149 +1,108 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 180 100% 50%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 280 100% 50%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 300 100% 50%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 180 100% 50%;
+    --radius: 0.75rem;
   }
 }
 
-/* Non-scroll and full-height baseline */
-html, body {
-  height: 100%;
-  overflow: hidden;
-}
-
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
-}
-
-/* Enhanced animated aurora gradient layers - 25% more intense */
-.bg-aurora-layer-1 {
-  background:
-    radial-gradient(1000px 800px at 10% 20%, rgba(120, 73, 239, 0.375), transparent 50%),
-    radial-gradient(1000px 800px at 90% 80%, rgba(50, 108, 216, 0.375), transparent 50%),
-    linear-gradient(180deg, #0b0b12 0%, #0a0a0a 60%, #0b0b12 100%);
-  animation: auroraFloat1 20s ease-in-out infinite alternate;
-}
-
-.bg-aurora-layer-2 {
-  background:
-    radial-gradient(900px 700px at 70% 30%, rgba(119, 167, 255, 0.3125), transparent 45%),
-    radial-gradient(900px 700px at 30% 70%, rgba(120, 73, 239, 0.25), transparent 45%);
-  animation: auroraFloat2 15s ease-in-out infinite alternate;
-  opacity: 1;
-}
-
-.bg-aurora-layer-3 {
-  background:
-    radial-gradient(1200px 900px at 50% 50%, rgba(50, 108, 216, 0.1875), transparent 60%);
-  animation: auroraFloat3 25s ease-in-out infinite alternate;
-  opacity: 0.75;
-}
-
-/* Floating particles overlay - 25% more intense */
-.bg-particles {
-  background-image: 
-    radial-gradient(2px 2px at 20% 30%, rgba(255, 255, 255, 0.375), transparent),
-    radial-gradient(2px 2px at 60% 70%, rgba(120, 73, 239, 0.5), transparent),
-    radial-gradient(1px 1px at 50% 50%, rgba(50, 108, 216, 0.375), transparent),
-    radial-gradient(1px 1px at 80% 10%, rgba(119, 167, 255, 0.5), transparent),
-    radial-gradient(2px 2px at 40% 90%, rgba(255, 255, 255, 0.25), transparent);
-  background-size: 200% 200%;
-  animation: particlesFloat 30s linear infinite;
-  opacity: 0.75;
-}
-
-@keyframes auroraFloat1 {
-  0% {
-    filter: hue-rotate(0deg) saturate(1);
-    transform: scale(1) translate(0, 0);
-    opacity: 1;
+@layer base {
+  * {
+    @apply border-border;
   }
-  50% {
-    filter: hue-rotate(18deg) saturate(1.25);
-    transform: scale(1.1) translate(-2.5%, 2.5%);
-    opacity: 1;
-  }
-  100% {
-    filter: hue-rotate(30deg) saturate(1.35);
-    transform: scale(1.12) translate(2.5%, -2.5%);
-    opacity: 1;
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
   }
 }
 
-@keyframes auroraFloat2 {
-  0% {
-    transform: scale(1) translate(0, 0) rotate(0deg);
-    opacity: 1;
+@layer components {
+  .glass {
+    @apply bg-white/5 backdrop-blur-xl border border-white/10;
   }
-  50% {
-    transform: scale(1.06) translate(3.75%, -3.75%) rotate(2.5deg);
-    opacity: 1;
+  
+  .glass-hover {
+    @apply transition-all duration-300 hover:bg-white/10 hover:border-white/20;
   }
-  100% {
-    transform: scale(1.12) translate(-3.75%, 3.75%) rotate(-2.5deg);
-    opacity: 1;
+  
+  .neural-line {
+    background: linear-gradient(90deg, 
+      transparent 0%, 
+      rgba(0, 240, 255, 0.5) 50%, 
+      transparent 100%
+    );
+    animation: neural-flow 3s linear infinite;
   }
-}
-
-@keyframes auroraFloat3 {
-  0% {
-    transform: scale(1) translate(0, 0);
-    opacity: 0.75;
+  
+  .gradient-text {
+    @apply bg-gradient-to-r from-cyber-blue via-cyber-purple to-cyber-pink bg-clip-text text-transparent;
   }
-  50% {
-    transform: scale(1.14) translate(-2.5%, 2.5%);
-    opacity: 0.85;
+  
+  .glow-border {
+    position: relative;
   }
-  100% {
-    transform: scale(1.18) translate(2.5%, -2.5%);
-    opacity: 0.8;
-  }
-}
-
-@keyframes particlesFloat {
-  0% {
-    background-position: 0% 0%, 100% 100%, 50% 50%, 80% 20%, 30% 80%;
-  }
-  25% {
-    background-position: 25% 25%, 75% 75%, 60% 40%, 60% 40%, 50% 60%;
-  }
-  50% {
-    background-position: 50% 50%, 50% 50%, 70% 30%, 40% 60%, 70% 40%;
-  }
-  75% {
-    background-position: 75% 75%, 25% 25%, 40% 60%, 20% 80%, 60% 20%;
-  }
-  100% {
-    background-position: 100% 100%, 0% 0%, 50% 50%, 80% 20%, 30% 80%;
+  
+  .glow-border::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: inherit;
+    padding: 2px;
+    background: linear-gradient(45deg, #00f0ff, #b400ff, #ff00ea);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    animation: gradient 3s linear infinite;
+    background-size: 200% 200%;
   }
 }
 
-/* Arrow bounce animation pointing left */
-@keyframes bounce-horizontal {
-  0%, 100% {
-    transform: translateX(0);
-  }
-  50% {
-    transform: translateX(-8px);
-  }
+@keyframes neural-flow {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
 }
 
-.animate-bounce-horizontal {
-  animation: bounce-horizontal 1.5s ease-in-out infinite;
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 10px;
 }
+
+::-webkit-scrollbar-track {
+  @apply bg-background;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-primary/30 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-primary/50;
+}
+
+/* Selection styling */
+::selection {
+  @apply bg-primary/30 text-foreground;
+}
+

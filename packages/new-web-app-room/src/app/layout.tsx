@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import { Providers } from "./providers";
 import { Navbar } from "@/components/layout/navbar";
 import { NeuralBackground } from "@/components/layout/neural-background";
 
@@ -26,11 +27,15 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body className={inter.className}>
-        <NeuralBackground />
-        <Navbar />
-        <main className="min-h-screen pt-16">{children}</main>
+        <Providers>
+          <NeuralBackground />
+          <Navbar />
+          <main className="min-h-screen pt-16">{children}</main>
+        </Providers>
       </body>
     </html>
   );
 }
+
+
 

@@ -1,108 +1,128 @@
 "use client";
 
-import React from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { Shield, Menu, X } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { Shield, Menu, X } from "lucide-react";
+import { useState } from "react";
+import { ConnectButton } from "thirdweb/react";
+import { client } from "@/lib/thirdweb/client";
 
 export function Navbar() {
-  const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
-  const pathname = usePathname();
-
-  const navLinks = [
-    { href: "/", label: "Home" },
-    { href: "/audit", label: "Audit" },
-    { href: "/dashboard", label: "Dashboard" },
-    { href: "/monitoring", label: "Monitoring" },
-  ];
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 glass border-b border-white/10">
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-black/20 backdrop-blur-md border-b border-white/10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link href="/" className="flex items-center space-x-2 group">
-            <div className="relative">
-              <Shield className="h-8 w-8 text-primary group-hover:rotate-12 transition-transform duration-300" />
-              <div className="absolute inset-0 blur-xl bg-primary/50 group-hover:bg-primary/70 transition-all" />
+          <Link href="/" className="flex items-center space-x-2">
+            <div className="p-2 rounded-lg bg-gradient-to-r from-cyber-blue to-cyber-purple">
+              <Shield className="h-6 w-6 text-white" />
             </div>
-            <span className="text-xl font-bold gradient-text">DeFiGuard AI</span>
+            <span className="text-xl font-bold bg-gradient-to-r from-cyber-blue to-white bg-clip-text text-transparent">
+              DeFiGuard AI
+            </span>
           </Link>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={cn(
-                  "text-sm font-medium transition-colors hover:text-primary relative group",
-                  pathname === link.href
-                    ? "text-primary"
-                    : "text-muted-foreground"
-                )}
-              >
-                {link.label}
-                {pathname === link.href && (
-                  <span className="absolute -bottom-1 left-0 w-full h-0.5 bg-primary rounded-full" />
-                )}
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary rounded-full transition-all group-hover:w-full" />
-              </Link>
-            ))}
+            <Link 
+              href="/audit" 
+              className="text-gray-300 hover:text-cyber-blue transition-colors"
+            >
+              Audit Contract
+            </Link>
+            <Link 
+              href="/dashboard" 
+              className="text-gray-300 hover:text-cyber-blue transition-colors"
+            >
+              Dashboard
+            </Link>
+            <Link 
+              href="/about" 
+              className="text-gray-300 hover:text-cyber-blue transition-colors"
+            >
+              About
+            </Link>
           </div>
 
-          {/* Wallet Connect Placeholder */}
-          <div className="hidden md:block">
-            <Button variant="glass" size="sm">
-              Connect Wallet
-            </Button>
+          {/* Connect Wallet Button */}
+          <div className="hidden md:flex items-center space-x-4">
+            <ConnectButton
+              client={client}
+              theme="dark"
+              connectButton={{
+                label: "Connect Wallet",
+                style: {
+                  background: "linear-gradient(45deg, #00f0ff, #b400ff)",
+                  border: "none",
+                  borderRadius: "8px",
+                  color: "white",
+                  fontWeight: "500",
+                }
+              }}
+            />
           </div>
 
           {/* Mobile menu button */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="md:hidden"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          >
-            {mobileMenuOpen ? (
-              <X className="h-6 w-6" />
-            ) : (
-              <Menu className="h-6 w-6" />
-            )}
-          </Button>
-        </div>
-      </div>
-
-      {/* Mobile menu */}
-      {mobileMenuOpen && (
-        <div className="md:hidden border-t border-white/10">
-          <div className="px-2 pt-2 pb-3 space-y-1">
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={cn(
-                  "block px-3 py-2 rounded-md text-base font-medium transition-colors",
-                  pathname === link.href
-                    ? "text-primary bg-primary/10"
-                    : "text-muted-foreground hover:text-primary hover:bg-primary/5"
-                )}
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                {link.label}
-              </Link>
-            ))}
-            <div className="px-3 py-2">
-              <Button variant="glass" size="sm" className="w-full">
-                Connect Wallet
-              </Button>
-            </div>
+          <div className="md:hidden">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className="text-gray-300 hover:text-cyber-blue"
+            >
+              {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            </Button>
           </div>
         </div>
-      )}
+
+        {/* Mobile Navigation */}
+        {isMenuOpen && (
+          <div className="md:hidden">
+            <div className="px-2 pt-2 pb-3 space-y-1 bg-black/40 backdrop-blur-md rounded-lg mt-2 border border-white/10">
+              <Link
+                href="/audit"
+                className="block px-3 py-2 text-gray-300 hover:text-cyber-blue transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Audit Contract
+              </Link>
+              <Link
+                href="/dashboard"
+                className="block px-3 py-2 text-gray-300 hover:text-cyber-blue transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Dashboard
+              </Link>
+              <Link
+                href="/about"
+                className="block px-3 py-2 text-gray-300 hover:text-cyber-blue transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                About
+              </Link>
+              <div className="px-3 py-2">
+                <ConnectButton
+                  client={client}
+                  theme="dark"
+                  connectButton={{
+                    label: "Connect Wallet",
+                    style: {
+                      background: "linear-gradient(45deg, #00f0ff, #b400ff)",
+                      border: "none",
+                      borderRadius: "8px",
+                      color: "white",
+                      fontWeight: "500",
+                      width: "100%",
+                    }
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
     </nav>
   );
 }

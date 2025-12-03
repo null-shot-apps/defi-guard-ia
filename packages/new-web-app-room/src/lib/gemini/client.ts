@@ -1,14 +1,6 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
-
-export interface VulnerabilityAnalysis {
-  vulnerabilities: Vulnerability[];
-  riskScore: number;
-  gasOptimizations: string[];
-  bestPractices: string[];
-  summary: string;
-}
+const genAI = new GoogleGenerativeAI(process.env.NEXT_PUBLIC_GEMINI_API_KEY!);
 
 export interface Vulnerability {
   type: string;
@@ -20,131 +12,107 @@ export interface Vulnerability {
   similarExploits: string[];
 }
 
-export async function analyzeContractWithGemini(
-  code: string
-): Promise<VulnerabilityAnalysis> {
+export interface VulnerabilityAnalysis {
+  vulnerabilities: Vulnerability[];
+  riskScore: number;
+  gasOptimizations: string[];
+  bestPractices: string[];
+  summary: string;
+}
+
+export async function analyzeContractWithGemini(code: string): Promise<VulnerabilityAnalysis> {
   const model = genAI.getGenerativeModel({
-    model: process.env.GEMINI_MODEL || "gemini-2.5-flash-latest",
+    model: "gemini-2.0-flash-exp",
     generationConfig: {
       temperature: 0.2,
       topP: 0.95,
-      topK: 40,
       maxOutputTokens: 8192,
     },
   });
 
-  const prompt = `You are an expert smart contract security auditor. Analyze this Solidity code for vulnerabilities.
-
-IMPORTANT: Respond ONLY with valid JSON. No markdown, no code blocks, no explanations outside JSON.
+  const prompt = `Analyze this Solidity smart contract for security vulnerabilities. Return ONLY valid JSON:
 
 \`\`\`solidity
 ${code}
 \`\`\`
 
-Provide a detailed security analysis in this EXACT JSON format:
+JSON format:
 {
   "vulnerabilities": [
     {
-      "type": "Reentrancy" | "Integer Overflow" | etc.,
-      "severity": "Critical" | "High" | "Medium" | "Low",
-      "line": line_number,
-      "description": "detailed explanation of the vulnerability",
-      "exploitScenario": "step-by-step how this can be exploited",
-      "fix": "recommended code fix",
-      "similarExploits": ["DAO Hack 2016", "Other similar real-world exploits"]
+      "type": "string",
+      "severity": "Critical|High|Medium|Low",
+      "line": number,
+      "description": "string",
+      "exploitScenario": "string",
+      "fix": "string",
+      "similarExploits": ["string"]
     }
   ],
-  "riskScore": number_0_to_100,
-  "gasOptimizations": ["suggestion 1", "suggestion 2"],
-  "bestPractices": ["recommendation 1", "recommendation 2"],
-  "summary": "Overall security assessment of the contract"
+  "riskScore": number (0-100),
+  "gasOptimizations": ["string"],
+  "bestPractices": ["string"],
+  "summary": "string"
 }
 
-Find ALL vulnerabilities including:
-- Reentrancy attacks
-- Integer overflow/underflow
-- Unchecked external calls
-- Access control issues
-- DOS vulnerabilities
-- Front-running risks
-- Timestamp manipulation
-- Uninitialized storage
-- Delegatecall dangers
-- tx.origin authentication`;
+Focus on: reentrancy, overflow/underflow, access control, front-running, flash loan attacks, oracle manipulation, and gas optimization.`;
 
   try {
     const result = await model.generateContent(prompt);
-    const response = result.response.text();
+    const response = await result.response;
+    const text = response.text();
     
-    // Clean response - remove markdown code blocks if present
-    const cleanedResponse = response
-      .replace(/```json\n?/g, "")
-      .replace(/```\n?/g, "")
-      .trim();
+    // Clean the response to extract JSON
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      throw new Error("No valid JSON found in response");
+    }
     
-    const analysis = JSON.parse(cleanedResponse);
+    const analysis = JSON.parse(jsonMatch[0]) as VulnerabilityAnalysis;
+    
+    // Validate the response structure
+    if (!analysis.vulnerabilities || !Array.isArray(analysis.vulnerabilities)) {
+      throw new Error("Invalid response structure");
+    }
+    
     return analysis;
   } catch (error) {
-    console.error("Gemini API Error:", error);
-    throw new Error("Failed to analyze contract with AI");
+    console.error("Error analyzing contract:", error);
+    
+    // Return a fallback analysis
+    return {
+      vulnerabilities: [
+        {
+          type: "Analysis Error",
+          severity: "Medium",
+          line: 0,
+          description: "Unable to complete full analysis. Please check your contract syntax and try again.",
+          exploitScenario: "N/A",
+          fix: "Verify contract syntax and ensure all imports are available.",
+          similarExploits: []
+        }
+      ],
+      riskScore: 50,
+      gasOptimizations: ["Unable to analyze gas optimizations"],
+      bestPractices: ["Ensure proper testing", "Use established patterns", "Follow security guidelines"],
+      summary: "Analysis incomplete due to processing error. Please review contract manually."
+    };
   }
 }
 
-export async function generateRemediationCode(
-  originalCode: string,
-  vulnerability: Vulnerability
-): Promise<string> {
-  const model = genAI.getGenerativeModel({
-    model: process.env.GEMINI_MODEL || "gemini-2.5-flash-latest",
-    generationConfig: {
-      temperature: 0.3,
-      maxOutputTokens: 4096,
-    },
-  });
-
-  const prompt = `Given this vulnerable Solidity code and the identified vulnerability, provide the COMPLETE FIXED CODE.
-
-ORIGINAL CODE:
-\`\`\`solidity
-${originalCode}
-\`\`\`
-
-VULNERABILITY:
-Type: ${vulnerability.type}
-Line: ${vulnerability.line}
-Issue: ${vulnerability.description}
-
-Provide ONLY the fixed Solidity code. No explanations, no markdown blocks, just pure Solidity code.`;
-
-  const result = await model.generateContent(prompt);
-  return result.response.text();
-}
-
-export async function explainVulnerability(
-  vulnerability: Vulnerability
-): Promise<string> {
-  const model = genAI.getGenerativeModel({
-    model: process.env.GEMINI_MODEL || "gemini-2.5-flash-latest",
-    generationConfig: {
-      temperature: 0.7,
-      maxOutputTokens: 2048,
-    },
-  });
-
-  const prompt = `Explain this smart contract vulnerability in simple terms for developers:
-
-Type: ${vulnerability.type}
-Severity: ${vulnerability.severity}
-Description: ${vulnerability.description}
-
-Provide:
-1. What this vulnerability means (2-3 sentences)
-2. Real-world example of this exploit
-3. Why it's dangerous
-4. How to prevent it
-
-Keep it concise and educational.`;
-
-  const result = await model.generateContent(prompt);
-  return result.response.text();
+export function calculateRiskScore(vulnerabilities: Vulnerability[]): number {
+  if (vulnerabilities.length === 0) return 0;
+  
+  const severityWeights = {
+    Critical: 40,
+    High: 25,
+    Medium: 10,
+    Low: 5
+  };
+  
+  const totalScore = vulnerabilities.reduce((sum, vuln) => {
+    return sum + severityWeights[vuln.severity];
+  }, 0);
+  
+  return Math.min(100, totalScore);
 }
